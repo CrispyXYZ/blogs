@@ -14,9 +14,9 @@ sudo gem install jekyll bundler
 
 ## 测试 LaTeX
 
-显然，我们有 $\textcolor{red}{主=6}$ ，故
+行内公式：$E = mc^2$
 
+块级公式：
 $$
-\frac{+\infty}{2} \lt +\infty
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
 $$
-

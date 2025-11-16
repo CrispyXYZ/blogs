@@ -32,6 +32,8 @@ plugins:
   - jekyll-feed
 
 markdown: kramdown
+kramdown:
+  math_engine: null
 
 # Exclude from processing.
 # The following items will not be processed, by default.
