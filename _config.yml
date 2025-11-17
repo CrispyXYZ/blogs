@@ -19,21 +19,63 @@
 # in the templates via {{ site.myvariable }}.
 
 title: CrispyXYZ的个人博客
-author: CrispyXYZ
-email: crispyxyz@qq.com
-description: CrispyXYZ的个人技术博客
+description: CrispyXYZ的个人技术博客，分享编程技术、算法学习和开发经验
 baseurl: "/blogs" # the subpath of your site, e.g. /blog
 url: "https://crispyxyz.github.io" # the base hostname & protocol for your site, e.g. http://example.com
-github_username:  CrispyXYZ
+github_username: CrispyXYZ
+avatar: assets/img/favicons/avatar.png
+tagline: 欢迎来到我的个人技术博客
+keywords: "编程,技术,算法,开发,学习笔记"
 
 # Build settings
-theme: minima
-plugins:
-  - jekyll-feed
+theme: jekyll-theme-chirpy
+
+plugins: []
+
+exclude:
+  - assets/feed.xml
+  - feed.xml
+
+collections:
+  tabs:
+    output: true
+
+paginate: 10
+paginate_path: /page:num/
+
+lang: zh
+timezone: Asia/Shanghai
+
+github:
+  username: CrispyXYZ
+
+social:
+  name: CrispyXYZ
+  email: crispyxyz@qq.com
+  links:
+    - https://github.com/CrispyXYZ
+
+jekyll-archives:
+  enabled:
+    - categories
+    - tags
+  layouts:
+    category: category
+    tag: tag
+  permalinks:
+    category: /categories/:name/
+    tag: /tags/:name/
+
+highlighter: rouge
 
 markdown: kramdown
 kramdown:
-  math_engine: null
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
 
 # Exclude from processing.
 # The following items will not be processed, by default.

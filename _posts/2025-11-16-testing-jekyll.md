@@ -2,7 +2,10 @@
 layout: post
 title: "测试 Jekyll"
 date: 2025-11-16 16:56:00 +0800
-categories: 测试
+categories: [测试]
+math: true
+mermaid: false
+pin: false
 ---
 
 ## 安装 Jekyll
