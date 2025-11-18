@@ -43,7 +43,7 @@ collections:
 paginate: 10
 paginate_path: /page:num/
 
-lang: zh
+lang: zh-CN
 timezone: Asia/Shanghai
 
 github:
