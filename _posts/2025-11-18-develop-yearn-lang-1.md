@@ -8,6 +8,8 @@ mermaid: false
 pin: false
 ---
 
+项目地址：[yearn-lang](https://github.com/CrispyXYZ/yearn-lang)
+
 昨晚赶在熄灯前终于把这一版本的 Yearn lang 写好了，主要实现了赋值语句和复合语句，也包括变量符号表，还有些许 bug，下周再修。这工程量比想象中大多了，但看到代码能正常跑起来还是挺有成就感的qwq
 
 ## 设计文法
