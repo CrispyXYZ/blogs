@@ -6,6 +6,7 @@ categories: [开发]
 math: false
 mermaid: false
 pin: false
+tags: [C++, 编译器, 词法分析, 语法分析, AST, 解释器, 符号表, Yearn-lang, 编程语言设计]
 ---
 
 项目地址：[yearn-lang](https://github.com/CrispyXYZ/yearn-lang)

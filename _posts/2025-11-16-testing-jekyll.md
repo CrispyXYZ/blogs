@@ -6,6 +6,7 @@ categories: [测试]
 math: true
 mermaid: false
 pin: false
+tags: [Jekyll, LaTeX]
 ---
 
 ## 安装 Jekyll
