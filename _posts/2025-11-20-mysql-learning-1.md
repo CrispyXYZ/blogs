@@ -16,6 +16,7 @@ tags: [MySQL, SQL入门]
 一个表可以理解为一个 `struct[]` 数据结构。
 
 例如下面的名为 `Persons` 的表
+
 |id |last_name  |first_name |address        |city       |
 |-  |-          |-          |-              |-          |
 |1  |Adams      |John       |Oxford Street  |London     |
