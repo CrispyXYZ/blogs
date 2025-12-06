@@ -16,15 +16,19 @@ tags: [MySQL, SQL入门, DISTINCT, WHERE, 练习题]
 Q1. 在 MySQL 中，表可以类比编程语言中的哪种数据结构？SQL 的表相比这种数据结构有什么特别之处？
 
 <details>
-<summary>A1. </summary>
-表可以类比编程语言中的结构体数组。不同的是，SQL 的表支持 NULL 值。
+<summary>A1. [点此展开]</summary>
+<div markdown="block">
+表可以类比编程语言中的结构体数组。不同的是，SQL 的表支持 `NULL` 值。
+</div>
 </details>
 
 Q2. 创建表时，如果出现 `ERROR 1046 (3D000): No database selected` 错误，如何解决？
 
 <details>
-<summary>A2. </summary>
+<summary>A2. [点此展开]</summary>
+<div markdown="block">
 在执行 SQL 语句之前，需要先选择数据库。使用命令 `USE database_name;` 选择数据库。或者使用 `CREATE DATABASE database_name;` 创建一个新数据库并选择它。
+</div>
 </details>
 
 Q3. 写出创建Persons表的SQL语句，该表包含以下字段：
@@ -36,7 +40,8 @@ Q3. 写出创建Persons表的SQL语句，该表包含以下字段：
 - city (最大长度255的字符串)
 
 <details>
-<summary>A3. </summary>
+<summary>A3. [点此展开]</summary>
+<div markdown="block">
 
 ```sql
 CREATE TABLE Persons (
@@ -50,12 +55,14 @@ CREATE TABLE Persons (
 
 请注意用的是小括号，而不是大括号。
 
+</div>
 </details>
 
 Q4. 向Persons表插入数据的两种基本语法是什么？哪种情况下可以省略列名列表？
 
 <details>
-<summary>A4. </summary>
+<summary>A4. [点此展开]</summary>
+<div markdown="block">
 
 ```sql
 -- 插入单行
@@ -72,12 +79,14 @@ VALUES
 
 当插入所有列的值，且值的顺序与表中列的顺序完全一致时，可以省略 `(Col1, Col2, ...)` 部分。
 
+</div>
 </details>
 
 Q5. 如何查看数据库中所有表的列表？如何查看某个表的详细结构？
 
 <details>
-<summary>A5. </summary>
+<summary>A5. [点此展开]</summary>
+<div markdown="block">
 
 查看数据库中所有表的列表：
 
@@ -91,12 +100,14 @@ DESCRIBE TableName;
 DESC TableName;
 ```
 
+</div>
 </details>
 
 Q6. 如何从Persons表中查询所有人的last_name和first_name？如果查询所有列呢？
 
 <details>
-<summary>A6. </summary>
+<summary>A6. [点此展开]</summary>
+<div markdown="block">
 
 ```sql
 -- 查询所有人的last_name和first_name
@@ -106,12 +117,14 @@ SELECT last_name, first_name FROM Persons;
 SELECT * FROM Persons;
 ```
 
+</div>
 </details>
 
 Q7. 为什么SELECT语句的列名列表不需要加圆括号，而INSERT语句需要？
 
 <details>
-<summary>A7. </summary>
+<summary>A7. [点此展开]</summary>
+<div markdown="block">
 
 可以这样理解语法设计：
 
@@ -123,6 +136,7 @@ Q7. 为什么SELECT语句的列名列表不需要加圆括号，而INSERT语句�
 - `SELECT Col1, Col2, ...` 中的 `ColN` 其实是表达式，并不一定必须是列名
 - `INSERT INTO TableName (Col1, Col2, ...)` 中的列名列表必须是表中的列名，不能是表达式
 
+</div>
 </details>
 
 ## 新知识
