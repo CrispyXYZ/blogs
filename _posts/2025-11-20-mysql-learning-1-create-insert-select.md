@@ -6,7 +6,7 @@ categories: [数据库]
 math: true
 mermaid: false
 pin: false
-tags: [MySQL, SQL入门]
+tags: [MySQL, SQL入门, CREATE, INSERT, SELECT]
 ---
 
 本文是对 [SQL入门教程 - CSDN](https://blog.csdn.net/shanguicsdn000/article/details/142332546) 的学习记录。
