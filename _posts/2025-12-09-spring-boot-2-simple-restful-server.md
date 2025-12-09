@@ -6,7 +6,7 @@ categories: [开发]
 math: false
 mermaid: false
 pin: false
-tags: [Java, Spring Boot, Controller]
+tags: [Java, Spring Boot, Controller, RESTful API, Web 开发, 后端开发, HTTP, RestController, CRUD]
 ---
 
 项目地址：[https://github.com/crispyxyz/spring-demo](https://github.com/crispyxyz/spring-demo)

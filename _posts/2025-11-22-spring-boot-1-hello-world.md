@@ -6,7 +6,7 @@ categories: [开发]
 math: false
 mermaid: false
 pin: false
-tags: [Java, Spring Boot, Controller]
+tags: [Java, Spring Boot, Controller, Web 开发, 后端开发, HTTP]
 ---
 
 本系列用于记录从零开始学习 ~~（预习）~~ Spring Boot 的过程。
