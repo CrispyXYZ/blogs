@@ -285,9 +285,9 @@ mysql> SELECT * FROM Persons;
 
 Q1. 请写出以下 SQL 语句：
 
-- 选择 `Persons` 表中 `last_name` 为 `Zhang` 的所有行。
-- 选择 `Persons` 表中 `last_name` 为 `Zhang` 或 `Li` 的所有行。
-- 选择 `Persons` 表中 `last_name` 为 `Zhang` 或 `Li` 的所有行，且 `address` 不为空。
+- 选择 `Persons` 表中 `first_name` 为 `Zhang` 的所有行。
+- 选择 `Persons` 表中 `first_name` 为 `Zhang` 或 `Li` 的所有行。
+- 选择 `Persons` 表中 `first_name` 为 `Zhang` 或 `Li` 的所有行，且 `address` 不为空。
 
 Q2. 请写出以下 SQL 语句：
 
@@ -295,6 +295,6 @@ Q2. 请写出以下 SQL 语句：
 
 Q3. 请写出以下 SQL 语句：
 
-- 选择满足以下条件的唯一的值：`last_name` 为 `Zhang` 或 `Li`，且 `address` 不为空。（注：`DISTINCT` 关键字在 `WHERE` 子句之后执行）
+- 选择满足以下条件的唯一的 `city` 值：`first_name` 为 `Zhang` 或 `Li`，且 `city` 不为空。（注：`DISTINCT` 关键字在 `WHERE` 子句之后执行）
 
 答案下期更新。
