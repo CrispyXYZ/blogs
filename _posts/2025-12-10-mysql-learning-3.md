@@ -6,7 +6,7 @@ categories: [数据库]
 math: false
 mermaid: false
 pin: false
-tags: [MySQL, SQL入门, LIKE, IN, ORDER BY, LIMIT]
+tags: [MySQL, SQL入门, LIKE, IN, ORDER BY, LIMIT, 数据库查询]
 ---
 
 ## 上期习题解答

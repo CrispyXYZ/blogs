@@ -6,7 +6,7 @@ categories: [数据库]
 math: false
 mermaid: false
 pin: false
-tags: [MySQL, SQL入门, DISTINCT, WHERE, 练习题]
+tags: [MySQL, SQL入门, DISTINCT, WHERE, 练习题, 数据库查询, OR, NOT]
 ---
 
 ## 知识回顾
