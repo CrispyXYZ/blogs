@@ -4,7 +4,7 @@ title: "Java 作业第一阶段(1): 实体类的实现"
 date: 2026-01-16 20:56:00 +0800
 categories: [开发]
 math: false
-mermaid: true
+mermaid: false
 pin: false
 tags: [Java, 面向对象, 继承, 抽象, 作业]
 ---
