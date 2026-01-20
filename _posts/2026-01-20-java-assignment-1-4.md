@@ -1,12 +1,12 @@
 ---
 layout: post
 title: "Java 作业第一阶段(4): 单元测试的实现"
-date: 2026-01-19 19:30:00 +0800
+date: 2026-01-20 22:43:00 +0800
 categories: [开发]
 math: false
 mermaid: true
 pin: false
-tags: [Java, 面向对象, 单元测试, 作业]
+tags: [Java, 面向对象, 测试, JUnit, 作业]
 ---
 
 本文延续上一节，继续完成该项目。
@@ -172,4 +172,97 @@ public class GenericDataManagerTest {
 }
 ```
 
-运行，成功通过。累死，明天再更。
+运行，成功通过。
+
+接下来是 `ScoreManager` 类的测试：
+
+```java
+package io.github.crispyxyz.studentmanagement;
+
+import io.github.crispyxyz.studentmanagement.model.Student;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ScoreManagerTest {
+
+    List<Student> studentList;
+    Student student1;
+    Student student2;
+    Student student3;
+
+    @BeforeEach
+    public void setUp() {
+        studentList = new ArrayList<>();
+
+        Map<String, Double> scores1 = new HashMap<>();
+        scores1.put("军事理论", 97.0);
+        scores1.put("微积分(2)", 59.9);
+
+        student1 = new Student("1001", 19, "张三", "生物工程");
+        student1.setScores(scores1);
+        studentList.add(student1);
+
+        Map<String, Double> scores2 = new HashMap<>();
+        scores2.put("军事理论", 59.7);
+        scores2.put("微积分(2)", 47.9);
+
+        student2 = new Student("1002", 20, "李四", "应用化学");
+        student2.setScores(scores2);
+        studentList.add(student2);
+
+        Map<String, Double> scores3 = new HashMap<>();
+        scores3.put("军事理论", 100.0);
+        scores3.put("微积分(2)", 100.0);
+
+        student3 = new Student("1003", 24, "王五", "材料物理");
+        student3.setScores(scores3);
+        studentList.add(student3);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        studentList = null;
+        student1 = null;
+        student2 = null;
+        student3 = null;
+    }
+
+    @Test
+    public void testGetCourseStat() {
+        ScoreManager.CourseStat stat = ScoreManager.getCourseStat(studentList, "军事理论");
+        assertEquals(2567.0/30.0, stat.average, 0.001);
+        assertEquals(2.0/3.0, stat.passRate, 0.001);
+    }
+
+    @Test
+    public void testGetFailedStudents() {
+        Map<Student, Integer> failedStudents = ScoreManager.getFailedStudents(studentList);
+
+        assertTrue(failedStudents.containsKey(student1));
+        assertTrue(failedStudents.containsKey(student2));
+        assertFalse(failedStudents.containsKey(student3));
+
+        assertEquals(1, failedStudents.get(student1));
+        assertEquals(2, failedStudents.get(student2));
+    }
+}
+```
+
+运行，发现测试失败：
+
+```
+org.opentest4j.AssertionFailedError: 
+预期:85.56666666666666
+实际:85.33333333333333
+```
+
+我们回头检查一下 `ScoreManager.getCourseStat` 方法。发现我们使用了 `int scoreSum` 用于储存总分数。我们将其改为 `double scoreSum` 即可解决此问题。
+
+剩下的部分……直接扔 [commit](https://github.com/CrispyXYZ/student-management/commit/a6b45f40b174dfd4c6dd6b489b149d022c07b7a6) 吧，敲代码敲入迷了。
