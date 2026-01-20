@@ -9,6 +9,8 @@ pin: false
 tags: [Java, 面向对象, 测试, JUnit, 作业]
 ---
 
+上一节：[Java 作业第一阶段(3): 多线程的实现]({% post_url 2026-01-18-java-assignment-1-3 %})
+
 本文延续上一节，继续完成该项目。
 
 ## 单元测试的实现

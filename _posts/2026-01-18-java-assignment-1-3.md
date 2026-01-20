@@ -155,3 +155,5 @@ public class EnrollThread extends Thread {
 ```
 
 完美！
+
+下一节：[Java 作业第一阶段(4): 单元测试的实现]({% post_url 2026-01-20-java-assignment-1-4 %})
