@@ -268,3 +268,5 @@ org.opentest4j.AssertionFailedError:
 我们回头检查一下 `ScoreManager.getCourseStat` 方法。发现我们使用了 `int scoreSum` 用于储存总分数。我们将其改为 `double scoreSum` 即可解决此问题。
 
 剩下的部分……直接扔 [commit](https://github.com/CrispyXYZ/student-management/commit/a6b45f40b174dfd4c6dd6b489b149d022c07b7a6) 吧，敲代码敲入迷了。
+
+下一节：[Java 作业第一阶段(5): 项目的完善]({% post_url 2026-01-21-java-assignment-1-5 %})
