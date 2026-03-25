@@ -85,6 +85,7 @@ S 0 0 0 0
 
 代码：
 
+{% raw %}
 ```cpp
 // U425042 迷宫最短路径
 // CrispyXYZ
@@ -146,6 +147,7 @@ signed main() {
     return 0;
 }
 ```
+{% endraw %}
 
 ## 进阶：0-1 BFS
 
@@ -207,6 +209,7 @@ Output:
 
 ### 题解
 
+{% raw %}
 ```cpp
 // B - ????[2009]?????
 // CrispyXYZ
@@ -279,6 +282,7 @@ signed main() {
     return 0;
 }
 ```
+{% endraw %}
 
 ### 注意
 
