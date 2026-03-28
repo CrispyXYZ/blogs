@@ -30,6 +30,8 @@ keywords: "编程,技术,算法,开发,学习笔记"
 # Build settings
 theme: jekyll-theme-chirpy
 
+toc: true`
+
 plugins: []
 
 exclude:
