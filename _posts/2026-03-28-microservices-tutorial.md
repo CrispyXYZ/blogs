@@ -652,8 +652,8 @@ pig-upms/
             └── entity/     # 实体类
 ```
 
-> 为什么要拆分出 `api` 和 `biz` 两个包？
->
+为什么要拆分出 `api` 和 `biz` 两个包？
+
 > 假设 “商品服务” 想要通过 Feign 调用 “用户服务” 的 `getUserById` 接口。
 >
 > 如果不拆分： “商品服务” 必须引入整个 “用户服务” 的依赖。结果就是，“商品服务” 还没启动，就先背上了 “用户服务” 的数据库驱动、业务逻辑、甚至是权限配置。这叫依赖污染，会导致 Jar 包巨大，且容易产生版本冲突。
@@ -662,8 +662,8 @@ pig-upms/
 >
 > 如果你写过 C/C++ 的项目，那么你很快就能意识到，他们就相当于头文件和源码文件之间的关系。
 
-> 为什么 `pig-gateway` 没有进一步拆分模块？
->
+为什么 `pig-gateway` 没有进一步拆分模块？
+
 > 在 PIG 中，你会发现有些模块是“单身”的。请记住：API 模块是给“调用者”准备的。
 >
 > 如果一个模块（如网关）处于流量的终点或入口，没有其他服务会反向调用它，那么拆分 API 纯属浪费时间。架构设计的核心是**“按需拆分”**，而不是为了拆分而拆分。所以通常只对业务模块进行拆分。
@@ -709,8 +709,8 @@ public class SysUserController {
 }
 ```
 
-> 权限注解 `@PreAuthorize` 是怎么知道当前用户是谁的？
->
+权限注解 `@PreAuthorize` 是怎么知道当前用户是谁的？
+
 > `@PreAuthorize("hasRole('ADMIN')")` 注解在执行方法前，会从 `SecurityContextHolder` 中取出当前用户的 `Authentication` 对象，并调用其 `getAuthorities()` 方法检查是否包含 `ROLE_ADMIN` 权限。
 >
 > 因此，只要你在业务服务中正确配置了 Spring Security 和 JWT 解析，注解就能自动生效。
@@ -1401,3 +1401,89 @@ public class PigDemoApplication {
 > 微服务架构就像搭积木, 每个服务是一个积木块, 看似简单的组合, 却能构建出强大的系统。希望这个教程能帮助你迈过初学者的门槛, 成为一名优秀的分布式系统开发者!
 
 加油! 💪
+
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const checkMermaid = setInterval(() => {
+        const svgs = document.querySelectorAll('.mermaid svg');
+        if (svgs.length > 0) {
+            clearInterval(checkMermaid);
+
+            svgs.forEach((svg) => {
+                // 容器样式调整
+                const container = svg.parentElement;
+                container.style.height = "400px"; // 设定一个合适的高度
+                container.style.border = "1px solid #eee";
+                container.style.position = "relative";
+
+                // 初始化全功能缩放
+                const panZoom = svgPanZoom(svg, {
+                    zoomEnabled: true,
+                    controlIconsEnabled: true,
+                    fit: true,
+                    center: true,
+                    customEventsHandler: {
+                        haltEventListeners: ['touchstart', 'touchend', 'touchmove', 'touchleave', 'touchcancel'],
+                        init: function(options) {
+                            var instance = options.instance,
+                                initialScale = 1,
+                                pannedX = 0,
+                                pannedY = 0;
+
+                            // 使用 Hammer.js 处理触摸事件
+                            this.hammer = Hammer(options.svgElement, {
+                                inputClass: Hammer.SUPPORT_POINTER_EVENTS ? Hammer.PointerEventInput : Hammer.TouchInput
+                            });
+
+                            this.hammer.get('pinch').set({enable: true});
+
+                            // 处理双指缩放
+                            this.hammer.on('pinchstart', function(ev) {
+                                initialScale = instance.getZoom();
+                                instance.zoomAtPoint(initialScale * ev.scale, {x: ev.center.x, y: ev.center.y});
+                            });
+
+                            this.hammer.on('pinchmove', function(ev) {
+                                instance.zoomAtPoint(initialScale * ev.scale, {x: ev.center.x, y: ev.center.y});
+                            });
+
+                            // 处理滑动（Pan）
+                            this.hammer.on('panstart panmove', function(ev) {
+                                if (ev.type === 'panstart') {
+                                    pannedX = 0;
+                                    pannedY = 0;
+                                }
+                                instance.panBy({x: ev.deltaX - pannedX, y: ev.deltaY - pannedY});
+                                pannedX = ev.deltaX;
+                                pannedY = ev.deltaY;
+                            });
+
+                            // 阻止手机浏览器默认的滚动行为（当在图表上操作时）
+                            options.svgElement.addEventListener('touchmove', function(e) { e.preventDefault(); }, {passive: false});
+                        },
+                        destroy: function() {
+                            this.hammer.destroy();
+                        }
+                    }
+                });
+            });
+        }
+    }, 500);
+});
+</script>
+
+<style>
+  .mermaid {
+    /* 解决滑动冲突，确保用户可以划过图表区域而不会卡住页面滚动 */
+    touch-action: none;
+  }
+  .mermaid svg {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+  }
+</style>
+
