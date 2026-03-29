@@ -3,7 +3,7 @@ layout: post
 title: "后端开发：微服务架构入门教程 —— 以 Pig 为例"
 date: 2026-03-28 23:36:00 +0800
 categories: [开发]
-math: true
+math: false
 mermaid: true
 pin: false
 tags: [Java, Spring Boot, Web 开发, HTTP, 分布式, 微服务, 后端开发, Spring Cloud]
@@ -11,9 +11,9 @@ tags: [Java, Spring Boot, Web 开发, HTTP, 分布式, 微服务, 后端开发, 
 
 **教程目标**: 帮助初学者从零开始理解微服务架构和 Pig 项目的系统运作流程
 
-**前置知识**：Spring Boot 开发基础、对微服务架构各个核心组件的概念有一定了解
+**前置知识**：本文假设读者具有 Spring Boot 开发基础、对微服务架构各个核心组件的概念有一定了解、且了解 JWT 技术的基本使用
 
-> 声明：本文使用 Claude Code、NVIDIA AI、DeepSeek、Gemini Pro 辅助生成
+> **⚠ 声明**：本文使用 Claude Code、NVIDIA AI、DeepSeek、Gemini Pro 辅助生成
 
 ---
 
@@ -23,7 +23,7 @@ tags: [Java, Spring Boot, Web 开发, HTTP, 分布式, 微服务, 后端开发, 
 
 如果你只做过 Spring Boot 单体项目, 那你一定很熟悉这种结构:  *（tips: 此文章使用 Mermaid 技术进行图表渲染，如果你在下面看到了 Mermaid 原始语句文本，请稍作等待）*
 
-> tips: 如果图中字太小看不清可以用双指缩放网页（触摸板也行）
+> **💡 tips**: 如果图中字太小看不清可以用双指缩放网页（触摸板也行）
 
 ```mermaid
 %%%%%%%%%% 如果你看到了这行文字，说明 Mermaid 图表尚未完成加载，请稍作等待 %%%%%%%%%%
@@ -100,6 +100,8 @@ graph TD
 - ✅ 易扩展 (哪个服务压力大就扩哪个)
 - ✅ 技术自由 (用最适合的语言/技术)
 - ✅ 团队独立 (不同团队开发不同服务)
+
+> **⚠ 注意**：通常的微服务是需要将数据库分离开的，即每个微服务各自持有自己的数据库。但在 Pig 项目中，为了简化和实用，采用的是公用数据库。
 
 ---
 
@@ -178,9 +180,9 @@ flowchart TB
    - **pig-quartz** (5007): 定时任务 - "管理定时任务"
 6. **pig-common**: 公共组件 - "所有服务共享的工具"
 
-> **💡Tips 启动方式选择**：如果你是第一次接触分布式项目，建议先使用 **IDE 方式启动**（见 [附录 E](#e-最小化启动指南ide-方式) ），这样可以更直观地观察每个服务的启动日志和调试代码。等你熟悉了整个流程，再尝试用 Docker Compose 一键启动。两种方式任选其一，不必一开始就纠结 Docker。
+> **💡 启动方式选择**：如果你是第一次接触分布式项目，建议先使用 **IDE 方式启动**（见 [附录 E](#e-最小化启动指南ide-方式) ），这样可以更直观地观察每个服务的启动日志和调试代码。等你熟悉了整个流程，再尝试用 Docker Compose 一键启动。两种方式任选其一，不必一开始就纠结 Docker。
 
-### 2.4 类比理解: 把PIG想象成一个大型公司
+### 2.4 类比理解: 把Pig想象成一个大型公司
 
 ```mermaid
 graph TD
@@ -220,12 +222,18 @@ Pig 项目使用 Maven 多模块结构，各个业务模块（如 `pig-upms-biz`
 
 ### 2.6 Maven 多模块的逻辑
 
-当你第一次打开 PIG 源码，可能会被几十个 `pom.xml` 绕晕。请记住这个公式：父工程管版本，公共模块管工具，业务模块管逻辑。
+当你第一次打开 Pig 源码，可能会被几十个 `pom.xml` 绕晕。请记住这个公式：父工程管版本，公共模块管工具，业务模块管逻辑。
 
-- 根目录 `pom.xml`：它是“大管家”，不写代码，只负责定义所有依赖的版本号。
-- `pig-common`：它是“工具箱”。如果你修改了这里的代码，必须在根目录执行 `mvn install`，否则业务模块（如 UPMS）里引用的还是旧的代码包。
+- 根目录 `pom.xml`：它是“大管家”，不写代码，甚至不真正引入依赖包。它使用 `<dependencyManagement>` 标签把所有可能会用到的第三方包版本号“锁死”。这也是为什么你在子模块（比如 `pig-upms`）的 `pom.xml` 里引入依赖时，不需要写版本号 `<version>` 的原因，大管家已经帮你统一安排好了，这就避免了不同模块之间出现“版本冲突”的灾难。
+- `pig-common`：它是“工具箱”。这是大家“共享”的代码。
 
-> 💡 初学者必知：如果你在 `pig-upms` 里调不通某个工具类，先检查 `pig-upms-biz` 的 `pom.xml` 是否引入了对应的工具包。
+
+
+> **💡 初学者必知：假设你今天在 pig-common 里新写了一个工具类，然后兴冲冲地去 pig-upms 里调用，结果代码爆红说“找不到这个类”！为什么？**
+>
+> 因为业务模块在编译时，默认去本地 Maven 仓库（你电脑里的 `~/.m2` 目录）找依赖包，而不是直接读你编辑器里的源码。如果你只修改了代码，没执行 `mvn install`，本地仓库里的 `pig-common.jar` 还是旧的！
+>
+> 解决办法：每次修改了公共模块，一定要在根目录（或者 `pig-common` 目录）执行一次 `mvn install`，把最新代码打包并“安装”到你自己的本地仓库里。
 
 ---
 
@@ -261,6 +269,19 @@ sequenceDiagram
 2. **服务发现**: 服务需要调用别人时, 问 Nacos: "xxx服务的地址是什么?"
 3. **健康检查**: Nacos 定期检查服务: "你还活着吗?"
 4. **配置管理**: 所有服务的配置文件都集中存放在 Nacos
+
+> **💡 Nacos 是怎么知道服务“还活着”的？**
+> 
+> 初学者常有个误区，以为是 Nacos 像老板一样天天去查岗（主动问服务）。其实恰恰相反，是服务主动“打卡”。
+> 
+> - 心跳机制（Ping）：每个微服务启动后，默认每隔 5 秒就会向 Nacos 发送一个“心跳包”，证明自己还活着。
+> - 剔除机制：如果 Nacos 连续 15 秒没收到心跳，就会把这个服务标记为“不健康”；如果 30 秒还没收到，就会直接把它从通讯录里“开除”。
+
+> **💡 如果 Nacos 自己宕机了，微服务会全部瘫痪吗？**
+>
+> 答案是：短时间内不会！
+> 
+> 微服务客户端（比如网关、Feign）非常聪明，它们每次从 Nacos 查通讯录时，都会在自己的本地缓存里偷偷抄一份。就算 Nacos 突然崩溃，各个微服务依然可以靠着这份“本地通讯录”互相调用。这就极大地增强了系统的容灾能力，消除了注册中心单点故障带来的恐惧。
 
 ### 3.3 实际操作: 看看 Nacos 里有什么
 
@@ -302,7 +323,7 @@ graph TD
 
 注意：有了 Nacos 配置中心，所有服务的配置文件都集中在 Nacos 管理，但并不表示服务不需要单独的配置文件。有一些必要的配置必须保留在本服务中，例如应用名、Nacos 服务器地址等启动时必须知道的信息需要放在本服务的 `application.yml` 中，其余业务配置（数据库地址、Redis 配置、业务参数等）都可以放在 Nacos 中，实现动态刷新。
 
-> **版本变化**：Spring Cloud 2020.0.x 之前的版本，会优先加载 `bootstrap.yml` 而不是 `application.yml`。Spring Cloud Alibaba 2025.1.0.0 已经全面废弃 `bootstrap.yml`。新版本应在 `application.yml` 中通过 `spring.config.import` 显式导入配置中心，例如：
+> **💡 版本变化**：Spring Cloud 2020.0.x 之前的版本，会优先加载 `bootstrap.yml` 而不是 `application.yml`。Spring Cloud Alibaba 2025.1.0.0 已经全面废弃 `bootstrap.yml`。新版本应在 `application.yml` 中通过 `spring.config.import` 显式导入配置中心，例如：
 >
 > ```yaml
 > spring:
@@ -310,11 +331,11 @@ graph TD
 >     import: nacos:my-service.yml?refreshEnabled=true
 > ```
 
-为什么我的本地配置不生效？
-
+> **💡 为什么我的本地配置不生效？**
+>
 > 配置存在优先级，你的配置可能被更高级配置覆盖了，最新版中： `命令行参数 > 环境变量 > Nacos远程配置 > 本地`application.yml` > `bootstrap.yml`(若启用)`
 
-> 💡 进阶技巧：如果你想在代码里修改配置后立即生效而不重启服务，需要在对应的类上加上 `@RefreshScope` 注解。
+> **💡 进阶技巧**：如果你想在代码里修改配置后立即生效而不重启服务，需要在对应的类上加上 `@RefreshScope` 注解。
 
 ### 3.5 服务发现：代码里怎么“问”Nacos？
 
@@ -391,7 +412,7 @@ spring:
             - Path=/api/admin/**
 ```
 
-> 说明：`lb://pig-auth` 中的 `lb` 代表 Load Balance（负载均衡）。网关会根据这个服务名向 Nacos 查询 `pig-auth` 的实际地址（可能是多个实例），然后自动选择一个进行转发。这样即使 `pig-auth` 的 IP 或端口变化，网关也无需修改配置。
+> **💡 说明**：`lb://pig-auth` 中的 `lb` 代表 Load Balance（负载均衡）。网关会根据这个服务名向 Nacos 查询 `pig-auth` 的实际地址（可能是多个实例），然后自动选择一个进行转发。这样即使 `pig-auth` 的 IP 或端口变化，网关也无需修改配置。
 
 #### 2. 安全保护 (Security)
 
@@ -411,17 +432,28 @@ flowchart TD
     E -->|是| G[放行请求，转发到目标服务]
 ```
 
-为什么网关要调用 auth 服务校验 token？
+> **💡 为什么网关要调用 auth 服务校验 token？**
+>
+> 网关本身不持有私钥，无法解析 JWT 的签名，更无法判断 token 是否已被服务端吊销（如用户修改密码后作废旧 token）。因此，网关将 token 原样转发给 `pig-auth` 的 `/oauth2/introspect` 接口进行校验。
+>
+> 这个内部调用不会携带用户 token，因为 `pig-auth` 本身是认证服务，校验 token 的接口通常是公开的，或通过服务间认证（如 client credentials）进行保护，不会死循环。
+>
+> 如果 `pig-auth` 服务暂时不可用：网关会触发熔断（例如通过 Resilience4j 或 Sentinel 配置），快速返回 `503` 并提示“认证服务异常”，避免大量请求堆积导致雪崩。
 
-网关本身不持有私钥，无法解析 JWT 的签名，更无法判断 token 是否已被服务端吊销（如用户修改密码后作废旧 token）。因此，网关将 token 原样转发给 `pig-auth` 的 `/oauth2/introspect` 接口进行校验。
+#### 3. 限流与熔断 (Rate Limit & Circuit Breaker)
 
-这个内部调用不会携带用户 token，因为 `pig-auth` 本身是认证服务，校验 token 的接口通常是公开的，或通过服务间认证（如 client credentials）进行保护，不会死循环。
+**场景1: 瞬间涌入10万请求**
 
-如果 `pig-auth` 服务暂时不可用：网关会触发熔断（例如通过 Resilience4j 或 Sentinel 配置），快速返回 `503` 并提示“认证服务异常”，避免大量请求堆积导致雪崩。
+Pig 网关默认使用 Spring Cloud Gateway 提供的 RedisRateLimiter，借助 Redis 实现了令牌桶算法。
 
-#### 3. 限流熔断 (Rate Limit & Circuit Breaker)
+想象网关里有一个桶：
 
-场景1: 瞬间涌入10万请求
+- 系统以固定的速度（比如每秒放 1000 个）往桶里丢“令牌”。
+
+- 用户的请求到来时，必须先从桶里拿走一个“令牌”，才能被放行。
+
+- 如果瞬间来了 1 万个请求，桶里的令牌瞬间被抢光，剩下抢不到令牌的请求，网关会直接无情拒绝，返回 `429 Too Many Requests`。这样就保护了脆弱的后台服务。
+
 ```mermaid
 flowchart TD
     A["网关: 太多了, 请排队!"]
@@ -436,18 +468,23 @@ flowchart TD
     D --> E
 ```
 
-场景2: auth服务挂了
-```mermaid
-flowchart TD
-    A["网关: auth挂了, 快速失败"]
-    B["不再等待, 直接返回503"]
-    C["防止服务雪崩"]
+**场景2：`pig-auth` 服务挂了，网关还在一直傻等它响应？**
 
-    A --> B
-    B --> C
+不！微服务有熔断器（Circuit Breaker），它就像家里的保险丝，有三种状态：
+- 关闭（Closed）：正常放行。
+- 打开（Open）：如果发现 `pig-auth` 连续报错或超时，保险丝“熔断”。此时网关收到去 `auth` 的请求，不再转发，直接秒回报错（快速失败），防止请求堆积导致网关自己也被拖死（雪崩效应）。
+- 半开（Half-Open）：过了一会儿（比如 5 秒），熔断器会悄悄放几个请求过去探探路，如果 `auth` 服务活过来了，就恢复正常（Closed）；如果还是报错，就继续熔断（Open）。
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed: 系统正常
+    Closed --> Open: 错误率超标(熔断)
+    Open --> Half_Open: 等待一段时间后
+    Half_Open --> Closed: 尝试放行成功(恢复)
+    Half_Open --> Open: 尝试放行失败(继续熔断)
 ```
 
-### 4.3 网关在PIG中的配置
+### 4.3 网关在Pig中的配置
 
 客户端的请求流程:
 ```mermaid
@@ -493,7 +530,7 @@ sequenceDiagram
     门禁-->>你: ✅ 验证通过, 开门!
 ```
 
-PIG中的认证:
+Pig中的认证:
 ```mermaid
 sequenceDiagram
     participant 用户
@@ -524,7 +561,7 @@ sequenceDiagram
     门禁系统-->>你: ❌ 拒绝访问
 ```
 
-PIG中的授权:
+Pig中的授权:
 ```mermaid
 sequenceDiagram
     participant 用户
@@ -539,65 +576,22 @@ sequenceDiagram
     pig-upms-->>用户: ✅ 允许访问
 ```
 
-### 5.3 OAuth2 流程详解
+### 5.3 角色扮演：谁在参与 OAuth2？
 
-PIG使用 OAuth2 标准协议, 流程是这样的:
+要理解 OAuth2，你得先搞清楚这四个“演员”是谁。我们以“用微信账号登录抖音”为例：
 
-```mermaid
-sequenceDiagram
-    participant 浏览器
-    participant pig-gateway
-    participant pig-auth
-    participant MySQL
+1. 资源拥有者 (Resource Owner)：就是你。你拥有微信里的头像、好友列表等数据。
+2. 客户端 (Client)：抖音 App。它想申请查看你的微信头像。
+3. 认证服务器 (Authorization Server)：微信的登录系统。负责验证你的身份，并给抖音发令牌。
+4. 资源服务器 (Resource Server)：微信存储头像的服务器。抖音拿着令牌来这里取数据。
 
-    浏览器->>pig-gateway: 1. 用户访问
-    pig-gateway->>浏览器: 2. 未登录?重定向到 /auth/login
-
-    pig-auth->>浏览器: 3. 显示登录页面
-
-
-    浏览器->>pig-auth: 4. 提交登录
-
-    pig-auth->>MySQL: 5. 验证用户, 查询用户
-    
-
-    MySQL-->>pig-auth: 返回用户信息
-
-    pig-auth->>pig-auth: 6. 验证密码，生成JWT token
-    Note right of pig-auth: access_token: xxxxx
-    Note right of pig-auth: refresh_token: yyyyy
-
-    pig-auth-->>浏览器: 7. 返回token
-
-    浏览器->>pig-auth: 8. 后续请求: Header: Authorization: Bearer xxxxx
-
-    pig-auth->>pig-auth: 9. 验证token有效 ✅
-    pig-auth-->>浏览器: 访问资源
-
-
-```
-
-
-**Token类型**:
-- `access_token`: 使用令牌 (有效期短, 2小时)
-- `refresh_token`: 刷新令牌 (有效期长, 7天)
-- `scope`: 权限范围 (openid read write)
+在 Pig 项目中：
+- 用户就是资源拥有者。
+- `pig-ui` (前端) 是客户端。
+- `pig-auth` 是认证服务器。
+- `pig-upms` 等业务模块是资源服务器。
 
 ### 5.4 Pig-Auth 的核心功能
-
-将自己注册到Nacos:
-```java
-// PigAuthApplication.java
-@SpringBootApplication
-@EnableDiscoveryClient // 注册到Nacos
-public class PigAuthApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(PigAuthApplication.class, args);
-    }
-}
-```
-
-说明： `@EnableDiscoveryClient` 告诉 Spring Cloud 该应用需要向注册中心注册自己。即使不写这个注解，只要 `classpath` 下有 Nacos 依赖，服务也会自动注册，但显式声明能让代码意图更明确。
 
 主要API端点:
 ```text
@@ -616,6 +610,62 @@ GET  /oauth2/jwks           // 公钥获取
 
 Pig 主要使用 `password` 模式（适用于前后端分离的应用），即用户直接提供用户名密码换取 token。`authorization_code` 模式通常用于第三方应用授权（如“使用微信登录”），在本项目中可忽略。`refresh_token` 模式用于 `access_token` 过期后刷新，实现无感续期。
 
+### 5.5 选哪条路走？—— 四种核心授权模式
+
+OAuth2 不止一种登录方式。根据“客户端”是否可信，我们要选不同的“路”。
+
+#### 模式 A：授权码模式 (Authorization Code) —— 最安全、最正规
+
+**适用场景**：第三方应用登录（如：微信登录抖音）。
+
+**特点**：令牌不直接经过浏览器，安全性最高。
+
+```mermaid
+sequenceDiagram
+    participant 用户
+    participant 浏览器
+    participant 抖音
+    participant 微信
+
+    用户->>抖音: 点击“微信登录”
+    抖音->>浏览器: 重定向到微信登录页
+    浏览器->>微信: 展示二维码/登录页
+    用户->>微信: 扫码/输入密码确认授权
+    微信-->>浏览器: 返回一个临时“授权码”(Code)
+    浏览器->>抖音: 把 Code 传给抖音
+    抖音->>微信: 【后端通信】拿着 Code + 自己的密钥换 Token
+    微信-->>抖音: 返回 Access Token
+```
+
+#### 模式 B：密码模式 (Resource Owner Password Credentials) —— Pig 默认
+
+**适用场景**：自研的前后端分离项目（前端和后端都是自家兄弟，绝对可信）。
+
+**特点**：简单直接，用户直接把密码告诉前端。
+
+```mermaid
+sequenceDiagram
+    participant 用户
+    participant pig-ui
+    participant pig-auth
+
+    用户->>pig-ui: 输入用户名/密码
+    pig-ui->>pig-auth: POST /oauth2/token (带上账号密码)
+    pig-auth->>pig-auth: 校验密码并生成 JWT
+    pig-auth-->>pig-ui: 直接返回 Access Token
+```
+
+#### 模式 C：客户端模式 (Client Credentials)
+
+**适用场景**：没有“人”参与，纯粹是两个机器/服务之间的对话。
+
+**示例**：`pig-upms` 需要定时去另一个服务抓取天气数据。
+
+#### 模式 D：刷新令牌模式 (Refresh Token) —— 续命神技
+
+**场景**：用户的 `access_token` 过期了（通常只有 2 小时），总不能让用户重新输密码吧？
+
+**流程**：前端偷偷拿着之前存好的 `refresh_token` 去找 `pig-auth` 换一个全新的 `access_token` 回来。用户完全感知不到，这就是“无感登录”。
 
 ---
 
@@ -659,8 +709,8 @@ pig-upms/
             └── entity/     # 实体类
 ```
 
-为什么要拆分出 `api` 和 `biz` 两个包？
-
+> **💡 为什么要拆分出 `api` 和 `biz` 两个包？**
+>
 > 假设 “商品服务” 想要通过 Feign 调用 “用户服务” 的 `getUserById` 接口。
 >
 > 如果不拆分： “商品服务” 必须引入整个 “用户服务” 的依赖。结果就是，“商品服务” 还没启动，就先背上了 “用户服务” 的数据库驱动、业务逻辑、甚至是权限配置。这叫依赖污染，会导致 Jar 包巨大，且容易产生版本冲突。
@@ -669,9 +719,9 @@ pig-upms/
 >
 > 如果你写过 C/C++ 的项目，那么你很快就能意识到，他们就相当于头文件和源码文件之间的关系。
 
-为什么 `pig-gateway` 没有进一步拆分模块？
-
-> 在 PIG 中，你会发现有些模块是“单身”的。请记住：API 模块是给“调用者”准备的。
+> **💡 为什么 `pig-gateway` 没有进一步拆分模块？**
+>
+> 在 Pig 中，你会发现有些模块是“单身”的。请记住：API 模块是给“调用者”准备的。
 >
 > 如果一个模块（如网关）处于流量的终点或入口，没有其他服务会反向调用它，那么拆分 API 纯属浪费时间。架构设计的核心是**“按需拆分”**，而不是为了拆分而拆分。所以通常只对业务模块进行拆分。
 
@@ -716,8 +766,8 @@ public class SysUserController {
 }
 ```
 
-权限注解 `@PreAuthorize` 是怎么知道当前用户是谁的？
-
+> **💡 权限注解 `@PreAuthorize` 是怎么知道当前用户是谁的？**
+>
 > `@PreAuthorize("hasRole('ADMIN')")` 注解在执行方法前，会从 `SecurityContextHolder` 中取出当前用户的 `Authentication` 对象，并调用其 `getAuthorities()` 方法检查是否包含 `ROLE_ADMIN` 权限。
 >
 > 因此，只要你在业务服务中正确配置了 Spring Security 和 JWT 解析，注解就能自动生效。
@@ -753,6 +803,19 @@ sequenceDiagram
 
     网关->>浏览器: 10. 返回最终结果
 ```
+
+### 6.4 为什么我不带 Token 就访问不了接口？
+
+很多初学者会问：我在代码里也没写校验 Token 的逻辑啊，是谁在拦我？
+
+秘密就在 Pig 的每一个业务微服务都引入了 `spring-cloud-starter-security`：
+1. 资源服务器配置：每个微服务启动时，都会告诉 Spring Security：“我是一个资源服务器”。
+2. 默认拦截：Spring Security 会默认开启一个拦截器链（Filter Chain）。
+3. 解析过程：
+  - 请求进来时，拦截器会去 Headers 找 `Authorization: Bearer xxx`。
+  - 找不到？直接回 `401 Unauthorized`。
+  - 找到了？用我们在第五讲提到的“公钥”去解密这串 JWT。
+  - 解密成功？把 JWT 里的用户信息（用户名、角色）塞进当前线程的上下文（ SecurityContextHolder）里，后续代码就能拿到用户信息了。
 
 ---
 
@@ -879,7 +942,7 @@ sequenceDiagram
     pig-gateway-->>浏览器: ✅ 返回用户列表
 ```
 
-> 重要提示:
+> **💡 重要提示**:
 > - `refresh_token` 只能用一次, 用后作废
 > - `refresh_token` 也过期后, 需要重新登录
 
@@ -956,6 +1019,22 @@ public void test() {
 ```
 
 注意：Feign 会自动处理负载均衡和服务发现，无需关心具体 IP 地址。
+
+> **💡 底层揭秘：Feign 是怎么做负载均衡的？**
+>
+> 假如你的 `pig-upms` 服务因为访问量太大，部署了 3 台机器（实例 A、B、C）。Feign 从 Nacos 拿到这 3 个地址后，究竟把请求发给谁？
+>
+> 这里依靠的是内部的 LoadBalancer。最常见的策略是：
+> - 轮询（Round Robin）：一人一次，很公平（默认策略）。
+> - 随机（Random）：盲盒式抽取。
+
+> **⚠️ 初学者必踩大坑：Feign 的超时异常！**
+>
+> 当你用 Feign 调用另一个服务时，如果对方在执行一个超级复杂的 SQL，卡了 3 秒钟才返回结果，你的控制台大概率会飘红报错：`Read timed out`。
+>
+> 为什么？因为 Feign 默认是个急性子，它的默认超时时间通常只有 1 秒钟！如果下游服务 1 秒内没理它，它就直接翻脸抛异常。
+>
+> **避坑指南**：在实际开发中，如果预估某个接口处理较慢，一定要在 `application.yml` 中主动调整 Feign/LoadBalancer 的超时时间配置，或者去优化对方服务的执行速度。
 
 #### 🌐 2. API 网关 (Gateway)
 
@@ -1370,7 +1449,7 @@ public class PigDemoApplication {
 如果你已经读到这里, 说明你已经:
 
 - ✅ 理解了微服务架构的基本概念
-- ✅ 掌握了PIG项目整体架构
+- ✅ 掌握了Pig项目整体架构
 - ✅ 了解了各服务的作用
 - ✅ 清楚了完整请求流程
 - ✅ 知道了常见问题的解决方案
