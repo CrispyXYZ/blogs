@@ -12,7 +12,7 @@ order: 4
 (截至2025/11/17的情况）
 
 - **开发水平**: 熟悉 Java（Gradle和Maven构建系统），了解 C++（CMake构建系统）、Linux、Git、Android 开发，会一点点 Python、HTML/CSS/JavaScript、网络
-- **算法水平**: 目前还在从零开始学习各种基础算法
+- **算法水平**: 目前还在从零开始学习各种基础算法 ~~（2026更新：已放弃）~~
 - **开发经验**: 详见[GitHub](https://github.com/CrispyXYZ)
 
 ## 博客内容
