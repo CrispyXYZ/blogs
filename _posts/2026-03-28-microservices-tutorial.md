@@ -103,6 +103,41 @@ graph TD
 
 > **⚠ 注意**：通常的微服务是需要将数据库分离开的，即每个微服务各自持有自己的数据库。但在 Pig 项目中，为了简化和实用，采用的是公用数据库。
 
+### 第一讲测试题
+
+**Q1**. 请结合文中提到的促销活动场景，分别阐述单体架构在技术升级、故障隔离和性能扩展三个方面存在的具体问题。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 技术升级困难：单体架构中所有模块代码耦合在一起，无法针对某个模块单独升级技术栈，往往需要重写整个项目。
+- 单点故障：一个模块（如订单）出现内存溢出或死循环，会拖垮整个进程，导致登录等其他模块也无法使用。
+- 性能瓶颈：无法只对压力大的模块单独扩容，因为所有模块物理上混在一起，扩展效率极低。
+
+</details>
+
+**Q2**. 微服务架构与分布式架构之间是什么关系？请用一句话概括微服务作为分布式架构最佳实践的核心思想。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+分布式是指系统部署在多台服务器上协同工作；微服务是分布式架构的一种最佳实践，其核心思想是“拆得彻底、治得独立”——将单体应用拆分成多个独立的小服务，每个服务聚焦单一业务，拥有独立的数据库和部署流程。
+
+</details>
+
+**Q3**. 文中的微服务架构图展示了数据库独立，但Pig项目却采用了公用数据库。你认为Pig项目这样设计的主要考量是什么？这种设计可能带来哪些利弊？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+Pig采用公用数据库主要是为了简化和实用，降低初学者入门难度，避免分布式事务等复杂问题。
+
+利弊：
+- 优点是部署简单、开发快、易于数据关联查询
+- 缺点是服务间耦合度高，数据库成为单点瓶颈，违背了微服务“数据独立”的原则，未来拆分困难
+
+</details>
+
 ---
 
 ## 第二讲: Pig 项目整体架构初探
@@ -235,6 +270,35 @@ Pig 项目使用 Maven 多模块结构，各个业务模块（如 `pig-upms-biz`
 >
 > 解决办法：每次修改了公共模块，一定要在根目录（或者 `pig-common` 目录）执行一次 `mvn install`，把最新代码打包并“安装”到你自己的本地仓库里。
 
+### 第二讲测试题
+
+**Q1**. 在Pig项目的六大核心模块中，哪两个模块共同构成了系统的“门禁”系统？请说明它们分别承担了“验证身份”和“统一入口”的职责。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+网关（`pig-gateway`）作为统一入口，负责接收所有请求并路由转发；认证服务（`pig-auth`）负责用户登录、颁发和校验`token`，两者共同构成系统的“门禁”系统。
+
+</details>
+
+**Q2**. 请结合Maven多模块的概念，解释为什么在`pig-upms-biz`中修改代码后，有时需要执行`mvn install`命令才能在其他模块中生效。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+因为业务模块（如 `pig-upms-biz`）在编译时依赖的是本地 Maven 仓库中的 `pig-common.jar`，而不是直接读取源码。修改公共模块后，必须执行 `mvn install` 将最新代码打包并安装到本地仓库，其他模块才能引用到更新后的内容。
+
+</details>
+
+**Q3**. 假如你想为Pig项目新增一个“商品管理”微服务，根据模块间依赖关系，你需要在它的 `pom.xml` 中添加哪个公共模块的依赖？为什么？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+需要添加 `pig-common-core` 的依赖。因为 `pig-common` 提供了所有业务模块共享的通用工具类、异常处理、Feign 接口定义等基础能力。
+
+</details>
+
 ---
 
 ## 第三讲: 注册中心 - 服务的"电话簿"
@@ -346,6 +410,38 @@ graph TD
 - Feign 声明式客户端（见第八讲）：编写接口并用 `@FeignClient("pig-upms")` 标注，Spring 会自动生成实现类，调用时会自动向 Nacos 查询 `pig-upms` 的地址并发起 HTTP 请求。
 
 **关键注解**：在服务的启动类上添加 `@EnableDiscoveryClient`（或不显式使用注解，而是使用自动配置），才能让服务在启动时将自己注册到 Nacos，也让本服务具备发现其他服务的能力。
+
+### 第三讲测试题
+
+**Q1**. 请解释 Nacos 是如何通过“心跳机制”来判断一个微服务是否健康的，以及当 Nacos 自身宕机时，为什么各个微服务之间的调用不会立即瘫痪？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 心跳机制：每个微服务默认每隔 5 秒向 Nacos 发送一个“心跳包”，Nacos 若连续 15 秒未收到心跳则标记为不健康，30 秒未收到则将其从服务列表中剔除。
+- Nacos 宕机后：微服务客户端在本地缓存了服务地址列表，短时间内仍可依靠这份“本地通讯录”互相调用，不会立即瘫痪。
+
+</details>
+
+**Q2**. 在 Pig 项目中，各个微服务的配置信息是如何管理的？文中提到的“命令行参数”、“Nacos 远程配置”和本地 `application.yml`，它们的优先级顺序是怎样的？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+配置集中存放在 Nacos 配置中心进行管理。优先级顺序为：命令行参数 > 环境变量 > Nacos 远程配置 > 本地 `application.yml`
+
+</details>
+
+**Q3**. 如果服务 A 需要调用服务 B，它应该使用服务 B 的 IP 地址还是服务名？请说明 Spring Cloud 中哪两种常用方式支持通过服务名来发现和调用其他服务。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+应使用服务名（即 `spring.application.name`）。Spring Cloud 中两种常用方式：
+- Gateway 路由：通过 `uri: lb://服务名` 实现负载均衡与服务发现。
+- Feign 客户端：在接口上使用 `@FeignClient("服务名")`，框架自动从 Nacos 获取地址并发起调用。
+
+</details>
 
 ---
 
@@ -510,6 +606,39 @@ graph TD
     A --> D
 ```
 
+### 第四讲测试题
+
+**Q1**. 请描述网关在处理一个带有 `Authorization` 头的请求时，是如何进行安全校验的？为什么网关不直接解析 JWT，而是将 token 发送给 `pig-auth` 服务？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+网关从请求头 `Authorization: Bearer <token>` 中提取token，然后调用 `pig-auth` 的 `/oauth2/introspect` 接口进行校验，根据返回的 `active` 状态决定放行或拒绝。
+
+网关不直接解析 JWT 是因为它不持有私钥，无法验证签名，也无法判断 token 是否已被服务端吊销，必须由认证服务完成校验。
+
+</details>
+
+**Q2**. 文中提到了网关的“限流”和“熔断”功能。请分别说明这两个功能的主要目标，以及它们在应对高并发或服务故障时分别起到了什么作用？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 限流：通过令牌桶算法控制单位时间内的请求量，防止突发流量压垮后端服务，超限请求直接返回 `429 Too Many Requests`。
+
+- 熔断：当下游服务（如 `pig-auth`）持续报错或超时时，熔断器打开，网关快速失败返回 `503`，避免请求堆积导致网关自身被拖垮（雪崩效应）。
+
+</details>
+
+**Q3**. 在网关的配置示例中，`uri: lb://pig-auth` 里的 `lb` 代表什么？这种写法给系统带来了什么好处？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+`lb` 代表 Load Balance（负载均衡）。它告诉网关根据服务名从 Nacos 获取实际地址，并自动选择一个实例转发。这样即使 `pig-auth` 的 IP 或端口发生变化，网关也无需修改配置，增强了系统的灵活性和可维护性。
+
+</details>
+
 ---
 
 ## 第五讲: 认证服务 - 安全的"门禁系统"
@@ -667,6 +796,38 @@ sequenceDiagram
 
 **流程**：前端偷偷拿着之前存好的 `refresh_token` 去找 `pig-auth` 换一个全新的 `access_token` 回来。用户完全感知不到，这就是“无感登录”。
 
+### 第五讲测试题
+
+**Q1**. 请结合“用微信账号登录抖音”的例子，说明 OAuth2 协议中的“资源拥有者”、“客户端”、“认证服务器”和“资源服务器”四个角色分别对应Pig项目中的哪些部分。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 资源拥有者：用户（Pig 系统的使用者）
+- 客户端：`pig-ui`（前端应用）
+- 认证服务器：`pig-auth`（负责登录、签发令牌）
+- 资源服务器：`pig-upms` 等业务模块（存储用户数据、权限数据等资源）
+
+</details>
+
+**Q2**. Pig 项目默认使用的是 OAuth2 的哪种授权模式？请简述该模式下用户获取访问令牌（`access_token`）的基本流程。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+Pig 默认使用密码模式（Resource Owner Password Credentials）。流程为：用户在前端输入用户名/密码 → `pig-ui` 将凭证发给 `pig-auth` → `pig-auth` 验证通过后直接返回`access_token` 和 `refresh_token`。
+
+</details>
+
+**Q3**. 当用户的 `access_token` 过期后，Pig 项目是如何实现“无感续期”的？请描述其核心原理。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+当 `access_token` 过期，前端收到 `401` 后，自动使用之前保存的 `refresh_token` 向 `pig-auth` 的 `/oauth2/token` 接口（`grant_type=refresh_token`）请求新的 `access_token`，拿到新 `token` 后重试原请求，用户无感知。
+
+</details>
+
 ---
 
 ## 第六讲: 业务服务 - 系统的"大脑"
@@ -817,6 +978,36 @@ sequenceDiagram
   - 找到了？用我们在第五讲提到的“公钥”去解密这串 JWT。
   - 解密成功？把 JWT 里的用户信息（用户名、角色）塞进当前线程的上下文（ SecurityContextHolder）里，后续代码就能拿到用户信息了。
 
+### 第六讲测试题
+
+**Q1**. 请解释 Pig 项目中，将业务模块（如 `pig-upms`）拆分为 `pig-upms-api` 和 `pig-upms-biz` 两个子模块的主要目的，并说明这种拆分如何解决了“依赖污染”问题。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 拆分目的：将接口定义（API）与业务实现（BIZ）分离。
+- 解决依赖污染：其他服务（如商品服务）只需依赖轻量的`pig-upms-api`（仅包含接口和 DTO），而不需要引入整个 `pig-upms-biz`（包含数据库驱动、业务逻辑等），避免了 Jar 包臃肿和版本冲突。
+
+</details>
+
+**Q2**. 在 `pig-upms` 的 Controller 代码示例中，`@PreAuthorize` 注解是如何知道当前请求的用户是谁，并判断其是否拥有执行该方法的权限的？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+`@PreAuthorize` 注解在执行方法前，会从 `SecurityContextHolder` 中获取当前线程的 `Authentication` 对象，该对象中包含了用户的权限信息（通过 JWT 解析后存入）。注解内部会调用 `hasRole('ADMIN')` 等方法检查权限。
+
+</details>
+
+**Q3**. 为什么一个刚启动的 `pig-upms` 服务，即使开发者没有编写任何 Token 校验的代码，也能自动拒绝未携带 Token 的请求？请说明其背后的机制。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+每个业务微服务都引入了 `spring-cloud-starter-security` 并配置为资源服务器。Spring Security 默认启用了一个过滤器链，会拦截所有请求，检查 `Authorization` 头。如果没有携带有效 token，直接返回 `401 Unauthorized`，无需开发者手动编写校验代码。
+
+</details>
+
 ---
 
 ## 第七讲: 一次请求的完整旅程
@@ -945,6 +1136,46 @@ sequenceDiagram
 > **💡 重要提示**:
 > - `refresh_token` 只能用一次, 用后作废
 > - `refresh_token` 也过期后, 需要重新登录
+
+### 第七讲测试题
+
+**Q1**. 请简述在“用户登录获取 Token”的流程中，网关、`pig-auth` 和数据库分别扮演了什么角色，并说明它们之间的交互顺序。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 网关：接收登录请求，根据路由规则转发给 `pig-auth` 。
+- `pig-auth`：查询数据库验证用户密码，生成并返回 JWT token。
+- 数据库：存储用户信息、角色权限，供 `pig-auth` 查询校验。
+- 交互顺序：浏览器 → 网关 → `pig-auth` → MySQL → `pig-auth` → 网关 → 浏览器。
+
+</details>
+
+**Q2**. 当用户携带一个已过期的 Token 访问“用户列表”接口时，网关会返回什么状态码？请描述此后端（浏览器）是如何利用 `refresh_token` 自动处理这一过程的。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+网关会返回 `401 Unauthorized` 。
+
+处理过程：前端收到 `401` 后，自动携带 `refresh_token` 调用 `pig-auth` 的刷新接口换取新的 `access_token` ；保存新 token 后，重试之前失败的请求。
+
+</details>
+
+**Q3**. 在“请求用户列表”的流程中，请说明网关的过滤器链在将请求转发给`pig-upms`之前，具体执行了哪些关键步骤？
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+网关过滤器链执行顺序：
+1. 根据路径匹配路由规则，确定转发目标服务；
+2. 限流检查（基于 `RedisRateLimiter` ）；
+3. 处理跨域（CORS）；
+4. 提取 `Authorization` 头中的 token；
+5. 调用 `pig-auth` 校验 token 有效性；
+6. 校验通过后，将请求转发给 `pig-upms`。
+
+</details>
 
 ---
 
@@ -1238,6 +1469,39 @@ graph TD
 - 配置不同环境的参数
 - 压力测试看性能瓶颈
 - 查看Actuator监控指标
+
+### 第八讲测试题
+
+**Q1**. 文中介绍了 Feign 客户端用于服务间调用。请说明 Feign 是如何实现负载均衡的，并指出初学者在使用 Feign 时最常遇到的“坑”是什么以及如何避免。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 负载均衡：Feign 依赖 Spring Cloud LoadBalancer，从 Nacos 获取服务实例列表后，默认采用轮询（Round Robin）策略选择其中一个实例发起调用。
+- 常见坑：Feign 默认超时时间很短（通常1秒），如果被调服务处理较慢（如复杂 SQL），会抛出 Read timed out 异常。
+- 避免方法：在 `application.yml` 中调整 Feign 或 LoadBalancer 的超时配置，或优化下游服务的响应速度。
+
+</details>
+
+**Q2**. 如果你在 IDEA 中启动了一个微服务，并希望通过 Docker 容器中的 Nacos 进行服务注册，应该将 Nacos 的地址配置为`localhost` 还是宿主机的IP地址？请说明原因。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+应该配置为宿主机的IP地址（如 `192.168.x.x`），而不能是 `localhost`。因为 Docker 容器内的 `localhost` 指向容器自身，无法访问宿主机的服务。需要让容器能通过网络访问宿主机上 IDE 启动的微服务。
+
+</details>
+
+**Q3**. 根据文中的“学习路线图”，请为一位刚学完本教程的初学者规划三个阶段的学习目标。
+
+<details markdown="1">
+<summary>查看参考答案</summary>
+
+- 第一阶段（单点理解）：独立启动每个组件，用 Postman 测试接口，理解 Nacos、Gateway、Auth、UPMS 各自的作用。
+- 第二阶段（流程串联）：以 Debug 模式跟踪一个完整请求（登录 → 访问业务 → 权限校验），理解 Feign 调用、配置动态刷新、统一异常处理。
+- 第三阶段（生产优化）：学习 JVM 参数调优、数据库连接池配置、 Redis 缓存策略、限流熔断配置，并进行压力测试和多环境配置实践。
+
+</details>
 
 ### 8.4 从初学者到中级开发者
 
