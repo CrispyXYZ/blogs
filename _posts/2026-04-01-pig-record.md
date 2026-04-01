@@ -15,11 +15,7 @@ tags: [Java, Spring Boot, Spring Cloud, 微服务, 分布式, Pig 框架, Nacos,
 
 ### Docker 启动还是 IDE 启动？
 
-一般在生产环境中，都是通过 Docker 启动。但是在 Windows 操作系统中，并不支持 Docker 环境。因此，如果在目前的开发阶段选择 Docker 启动，需要进行额外配置，且有潜在的网络问题、I/O性能受限等不便之处。所以，第一次启动，我选择在 IDE 内使用 Maven 启动。
-
-### 启动 Nacos 失败？
-
-先启动数据库，执行 `/db` 里的建表语句（修改数据库名称），在 Nacos 配置文件 `register` 模块中的 `resources/application.properties` 中修改密码，可能还需要解决端口冲突问题（因为 `8080`是常用端口）
+强烈建议使用 docker 启动，因为 MySQL 和 redis 都是容器化的，无需修改配置。
 
 ### 启动其它服务时 Maven 报错？
 
@@ -48,4 +44,4 @@ mvn clean install
 
 #### 方案二：指定 Maven Profile
 
-尝试显式指定 profile，在 IDEA 中的 Maven 一栏的配置文件中手动勾选。
+尝试显式指定 profile（使用 `-Pexample1,example2` 这样的参数，或者在 IDEA 中的 Maven 一栏的配置文件中手动勾选。）
